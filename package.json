@@ -9,7 +9,8 @@
     "start": "node server.js",
     "start_old": "npm run dev",
     "lint": "eslint --ext .js,.vue src",
-    "build": "node build/build.js"
+    "build": "node build/build.js",
+    "postinstall": "npm install express serve-static"
   },
   "dependencies": {
     "axios": "^0.18.0",
