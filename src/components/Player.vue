@@ -116,7 +116,7 @@ export default {
   },
   asyncComputed: {
     radioStations () {
-      return axios.get(`http://intense-dusk-45481.herokuapp.com/stations`)
+      return axios.get(`https://intense-dusk-45481.herokuapp.com/stations`)
         .then(res => {
           return res.data
         })
@@ -147,7 +147,7 @@ export default {
         })
     },
     updateSongMeta (url) {
-      axios.get(`http://intense-dusk-45481.herokuapp.com/?station=${this.selectedRadioStation}`)
+      axios.get(`https://intense-dusk-45481.herokuapp.com/?station=${this.selectedRadioStation}`)
         .then(res => {
           this.currentSongName = res.data.currentlyPlaying
           this.bitRate = res.data.bitrate
