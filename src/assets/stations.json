@@ -3,60 +3,71 @@
 		"streamUrl": "http://mp3.fr.armitunes.com:8000",
 		"icon": "icon",
 		"homepage": "HOMEPAGE_URL",
-		"text": "Armitage's Dimension"
+		"text": "Armitage's Dimension",
+		"shortName": "armitages"
+
 	},
 	"anisonfm": {
 		"streamUrl": "http://pool.anison.fm:9000/AniSonFM(128)",
 		"icon": "icon",
 		"homepage": "HOMEPAGE_URL",
-		"text": "Anison FM"
+		"text": "Anison FM",
+		"shortName": "anison"
 	},
 	"animeblast": {
 		"streamUrl": "http://192.99.8.170:6110/stream",
 		"icon": "icon",
 		"homepage": "HOMEPAGE_URL",
-		"text": "Anime Blast Radio - The BLAST"
+		"text": "Anime Blast Radio - The BLAST",
+		"shortName": "animeblast"
 	},
 	"animenfo": {
 		"streamUrl": "http://momori.animenfo.com:8000/",
 		"icon": "icon",
 		"homepage": "HOMEPAGE_URL",
-		"text": "AnimeNFO Radio V2"
+		"text": "AnimeNFO Radio V2",
+		"shortName": "animenfo"
 	},
 	"extremeanimeradio": {
 		"streamUrl": "http://174.37.159.206:8052/stream",
 		"icon": "icon",
 		"homepage": "HOMEPAGE_URL",
-		"text": "Extreme Anime Radio"
+		"text": "Extreme Anime Radio",
+		"shortName": "extremeanime"
 	},
 	"finalfantasy": {
 		"streamUrl": "http://finalfantasystation.com:8000/stream.mp3",
 		"icon": "icon",
 		"homepage": "HOMEPAGE_URL",
-		"text": "Final Fantasy Radio"
+		"text": "Final Fantasy Radio",
+		"shortName": "finalfantasy"
 	},
 	"otakumusicradio": {
 		"streamUrl": "http://149.56.240.65:20068/stream",
 		"icon": "icon",
 		"homepage": "HOMEPAGE_URL",
-		"text": "Otaku Music Radio"
+		"text": "Otaku Music Radio",
+		"shortName": "otaku"
 	},
 	"shizafm": {
 		"streamUrl": "http://live.shizafm.com:8000/live",
 		"icon": "icon",
 		"homepage": "HOMEPAGE_URL",
-		"text": "Shiza FM"
+		"text": "Shiza FM",
+		"shortName": "shizafm"
 	},
 	"yggdrasil": {
 		"streamUrl": "http://95.211.241.92:9200/",
 		"icon": "icon",
 		"homepage": "http://yggdrasilradio.net/",
-		"text": "Yggdrasil Radio"
+		"text": "Yggdrasil Radio",
+		"shortName": "yggdrasil"
 	},
 	"vocaloid": {
 		"streamUrl": "http://curiosity.shoutca.st:8019/stream",
 		"icon": "icon",
 		"homepage": "http://vocaloidradio.com/",
-		"text": "Vocaloid Radio"
+		"text": "Vocaloid Radio",
+		"shortName": "vocaloid"
 	}
 }

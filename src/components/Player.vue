@@ -1,29 +1,56 @@
 <template>
 <div class="row no-gutters">
-  <div class="col-12">
-    <b-form-select
-    v-model="audioSource"
-    :options="radioStations"
-    stacked
-    value-field="streamUrl"
-    ></b-form-select>
-  </div>
-  <h4 v-if="audioSource === null">Select a radio station from the list to get started...</h4>
-  <div v-else-if="!currentSongName || !radioStationName">
-    <span class="fa fa-spin fa-2x fa-spinner"></span> Loading station data...
-  </div>
-  <div class="player station-info text-dark fixed-bottom w-100">
-    <div class="p-3 bg-dark text-white text-center">
-      <h4 class="mb-0">{{ radioStationName }}</h4>
-      <p class="font-weight-bold mb-0">{{ radioStationMeta }}</p>
-      <em>{{ radioStationWebPage }}</em>
+  <div class="row header p-2 align-items-center fixed-top bg-dark text-white">
+    <div class="col-12 col-sm-8">
+      <h1>Anime Radio</h1>
     </div>
-    <hr />
-    <p class="p-2 lead font-weight-bold mb-1">Playing now: {{ currentSongName }}</p>
-    <b-badge variant="info">Bitrate: {{ bitRate }} kbps</b-badge>
-    <div v-show="!currentlyPlaying">
-      <span class="fa fa-spin fa-2x fa-spinner"></span>
-      Waiting for stream to start playing...
+    <div class="col-12 col-sm-4">
+      <b-form-select v-if="radioStations"
+        v-model="selectedRadioStation"
+        :options="radioStations"
+        size="sm"
+        stacked
+        value-field="shortName"
+      >
+      <template slot="first">
+        <!-- this slot appears above the options from 'options' prop -->
+        <option :value="null" disabled>Please select a station</option>
+      </template>
+      </b-form-select>
+      <div v-else>
+        <font-awesome-icon icon="spinner" spin /> Loading station data...
+      </div>
+    </div>
+  </div>
+
+  <div class="player station-info text-dark fixed-bottom w-100">
+    <div class="font-weight-bold mb-1" v-if="currentlyPlaying">
+      <div class="p-2 bg-dark text-white">
+        <h4 class="mb-0">{{ radioStationName }}</h4>
+        <p class="font-weight-bold mb-0"><em>{{ radioStationMeta }}</em></p>
+        <em>{{ radioStationWebPage }}</em>
+      </div>
+      <div class="row align-items-center p-2">
+        <div class="col-12 col-md-10">
+          <h4>
+            <Soundbars />
+            Playing now: {{ currentSongName }}
+          </h4>
+        </div>
+        <div class="col-12 col-md-2 text-right">
+          <img
+            :src="currentSongArt"
+            v-if="currentSongArt"
+            class="img-fluid"
+            width="100px"
+            alt="Song art"
+          />
+        </div>
+      </div>
+    </div>
+    <div class="p-2" v-else>
+      <font-awesome-icon icon="music" />
+      Waiting for selection...
     </div>
     <div>
       <audio
@@ -44,10 +71,8 @@
 </template>
 
 <script>
-import icy from 'icy'
-// import IcyParser from 'icecast-parser'
+import Soundbars from '@/components/Soundbars'
 import axios from 'axios'
-import RadioStations from '@/assets/stations.json'
 export default {
   data () {
     return {
@@ -57,162 +82,78 @@ export default {
       radioStationName: '',
       radioStationMeta: '',
       radioStationWebPage: '',
-      radioStations: RadioStations,
+      currentSongArt: '',
       bitRate: 0,
       res: false,
       refreshID: '',
-      selectedRadioStation: '',
+      selectedRadioStation: null,
       currentlyPlaying: false
     }
   },
+  components: {
+    Soundbars
+  },
+  mounted () {
+    this.$refs.audio.volume = 0.07
+    window.clearInterval(this.refreshID)
+  },
   // Options / Data
   watch: {
-    audioSource () {
-      console.log('Audio source changed')
-      console.dir(this.audioSource)
-      this.currentlyPlaying = false
-      this.updateSongMeta(this.audioSource)
+    selectedRadioStation () {
+      console.log('Changed Radio Station')
+      this.resetEverything()
+      this.audioSource = this.radioStations[this.selectedRadioStation].streamUrl
+      this.radioStationName = this.radioStations[this.selectedRadioStation].text
+      this.updateSongMeta(this.selectedRadioStation)
+      // Register a regular interval that we ask for updates on what's playing
+      window.clearInterval(this.refreshID)
+      if (this.currentlyPlaying === true) {
+        this.refreshID = window.setInterval(() => {
+          this.updateSongMeta(this.selectedRadioStation)
+        }, 25000)
+      }
+    }
+  },
+  asyncComputed: {
+    radioStations () {
+      return axios.get(`http://intense-dusk-45481.herokuapp.com/stations`)
+        .then(res => {
+          return res.data
+        })
     }
   },
   methods: {
+    resetEverything () {
+      window.clearInterval(this.refreshID)
+      this.refreshID = null
+      this.currentlyPlaying = false
+      this.currentSongArt = ''
+      this.audioSource = null
+      this.radioStationName = ''
+    },
     timeListener () {
       this.currentTime = this.$refs.audio.currentTime
     },
     playing () {
-      this.$refs.audio.volume = 0.10
       this.currentlyPlaying = true
-      window.clearInterval(this.refreshID)
-      if (this.currentlyPlaying === true) {
-        this.refreshID = window.setInterval(() => {
-          this.updateSongMeta(this.audioSource)
-        }, 45000)
-      }
-      console.log('now we are playing')
+    },
+    retrieveSongImage (term) {
+      let url = `http://ws.audioscrobbler.com/2.0/?method=track.search&track=${term}&api_key=444f161c60e2f8caf55a2403c20720e4&format=json`
+      axios.get(url)
+        .then(res => {
+          if (res.data.results.trackmatches.track.length) {
+            this.currentSongArt = res.data.results.trackmatches.track[0].image[2]['#text']
+          }
+        })
     },
     updateSongMeta (url) {
-      axios.get(`https://intense-dusk-45481.herokuapp.com/?station=${url}`)
+      axios.get(`http://intense-dusk-45481.herokuapp.com/?station=${this.selectedRadioStation}`)
         .then(res => {
           this.currentSongName = res.data.currentlyPlaying
           this.bitRate = res.data.bitrate
           this.radioStationMeta = res.data.stationDescription
-          console.log(res)
+          this.retrieveSongImage(this.currentSongName)
         })
-    },
-    retrieveStation (radioUrl) {
-      /* let newURL = 'http://174.37.159.206:8052/stats?sid=1'
-      var request = require('request')
-      request(newURL, (error, response, body) => {
-        console.log('REQUESTING OSV')
-        console.log('error:', error) // Print the error if one occurred
-        console.log('statusCode:', response && response.statusCode) // Print the response status code if a response was received
-        console.log('body:', body) // Print the HTML for the Google homepage.
-      })
-
-      const Parser = require('icecast-parser')
-
-      const radioStation = new Parser({
-        url: newURL, // URL to radio station
-        keepListen: true, // don't listen radio station after metadata was received
-        autoUpdate: true, // update metadata after interval
-        errorInterval: 10 * 60, // retry connection after 10 minutes
-        emptyInterval: 5 * 60, // retry get metadata after 5 minutes
-        metadataInterval: 5 // update metadata after 5 seconds
-      })
-
-      radioStation.on('metadata', function (metadata) {
-        console.log('Here you will receive metadata each 10 seconds')
-        console.log(metadata.StreamTitle)
-      })
-
-      radioStation.on('stream', function (stream) {
-        stream.pipe(process.stdout) // Stream it's readable stream and you can pipe it to any writable stream
-      })
-
-      radioStation.on('error', function (error) {
-        console.log('ERROR OSV')
-        console.log(error)
-        console.log(['Connection to', this.getConfig('url'), 'was rejected'].join(' '))
-      })
-
-      radioStation.on('empty', function () {
-        console.log(['Radio station', this.getConfig('url'), 'doesn\'t have metadata'].join(' '))
-      })
-      // let url = 'http://finalfantasystation.com:8000/stream.mp3'
-
-      fetch(newURL, {
-        headers: {
-          'Access-Control-Allow-Origin': '*',
-          'User-Agent': 'Mozilla/5.0',
-          'Icy-MetaData': '1'
-        }
-      })
-        .then(res => {
-          console.log(res)
-        })
-      /* var r = new XMLHttpRequest();
-      r.open("GET", "http://finalfantasystation.com:8000/stream.mp3", true);
-      r.onreadystatechange = function () {
-        console.log(r.response)
-      };
-      r.send("banana=yellow");
-      var radioStation = new IcyParser(radioUrl)
-
-      radioStation.on('error', function (error) {
-        console.log(error)
-        console.log(['Connection to', this.getConfig('url'), 'was rejected'].join(' '))
-      })
-
-      radioStation.on('empty', function () {
-        console.log(['Radio station', this.getConfig('url'), 'doesn\'t have metadata'].join(' '))
-      })
-      radioStation.on('metadata', metadata => {
-        console.log(metadata)
-      })
-      /* var instance = axios.create({
-        baseURL: '',
-        timeout: 10000,
-        headers: {'Icy-MetaData': 1, 'Content-Type': 'audio/mpeg'}
-      })
-      instance.get(radioUrl)
-        .then(res => {
-          console.log('AXIOS RES')
-          console.log(res)
-        })
-        .catch(e => {
-          console.log(e)
-        }) */
-      /* icy.get(radioUrl, res => {
-        this.res = res
-        // log the HTTP response headers
-        console.log(res.headers)
-        let header = res.headers
-        this.bitRate = header['icy-br']
-        this.radioStationWebPage = header['icy-url']
-        this.radioStationName = header['icy-name']
-        this.radioStationMeta = header['icy-description']
-
-        // log any "metadata" events that happen
-        res.on('metadata', metadata => {
-          console.log('Retrieving meta data')
-          var parsed = icy.parse(metadata)
-          this.currentSongName = parsed.StreamTitle
-
-          console.log('audio ref')
-          console.log(parsed)
-        })
-      }) */
-    },
-    retrieveSongData () {
-      icy.get(this.audioSource, res => {
-        res.on('metadata', metadata => {
-          console.log('Retrieving meta data')
-          var parsed = icy.parse(metadata)
-          this.currentSongName = parsed.StreamTitle
-
-          console.log('audio ref update')
-          console.log(parsed)
-        })
-      })
     }
   }
 }
@@ -235,4 +176,7 @@ audio::-webkit-media-controls-timeline {
   font-size: 120%;
   font-weight: 700;
 }
+  h1,h2,h3 {
+    font-size: 110%;
+  }
 </style>

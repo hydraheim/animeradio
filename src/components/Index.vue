@@ -2,8 +2,6 @@
 <div class="container-fluid mt-5">
   <div class="row">
     <div class="col-12 text-white">
-      <h1>Radio Anime</h1>
-      <p class="lead">More info: <a href="https://radioani.me">https://radioani.me</a></p>
       <Player></Player>
     </div>
   </div>
@@ -23,3 +21,9 @@ export default {
   }
 }
 </script>
+
+<style scoped>
+  h1,h2,h3 {
+    font-size: 110%;
+  }
+</style>
