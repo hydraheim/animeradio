@@ -18,7 +18,7 @@
     "@fortawesome/free-solid-svg-icons": "^5.1.0-10",
     "@fortawesome/vue-fontawesome": "0.1.0-4",
     "axios": "^0.18.0",
-    "bootstrap-vue": "^2.0.0-rc.9",
+    "bootstrap-vue": "^2.23.1",
     "icecast-parser": "^3.0.0",
     "icy": "^2.1.0",
     "request": "^2.85.0",
